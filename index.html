@@ -142,6 +142,13 @@
                         recognition.stop();
                         document.getElementById('micImg').src = "mic.gif";
                     }
+                    
+                    //recognition.ontimout = function (e){
+                    //  ??? something like this to turn off mic-animate.gif and set to mic.gif ???
+                    //}
+                    
+                }else{
+                    alert("Webkit speech recognition is not supported by this browser.");
                 }
 
             }
