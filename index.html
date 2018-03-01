@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+<!--
+    John Galletta
+    INFO600-001
+    February 24, 2018
+    Dr. Yuan An
+    Assignment 3 - PHP/AJAX Server-Side Functionality with Asynchronous Page Events
+-->
+<html>
+    <head>
+        <link rel="stylesheet" href="assign3.css">
+        <link rel="icon" href="favicon.ico" type="image/ico">
+        <title>Search last.fm</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            //list of elements with name 'inputBox' (all inputs on form)
+            var input_list = document.getElementsByName('inputBox');
+
+            var resultsPlaceholderHTML = "<img src='http://vectorlogofree.com/wp-content/uploads/2014/04/3906-last-fm-icon-vector-icon-vector-eps.png' height=225 alt='last.fm logo'></br><h3 class='w3-red shadowedtext' style='text-align:center'>Enter search criteria to begin...</h3>";
+            var negativeResultsPlaceholderHTML = "<img src='http://vectorlogofree.com/wp-content/uploads/2014/04/3906-last-fm-icon-vector-icon-vector-eps.png' height=225 alt='last.fm logo'>Please enter a positive price...</h3>";
+
+            // to keep form from opening a new page
+            function preventSubmission() {
+                if (event.keyCode === 13) {
+                    event.preventDefault();
+                    showResults();
+                }
+            }
+
+            //simple validation that form has content in at least one inputBox
+            function validateFields() {
+                var validated = false;
+                for (var i = 0; i < input_list.length; i++) {
+                    //loop through array of inputs in input_list defined at top of page.
+                    if (input_list[i].value.toString().trim() != "") {
+                        validated = true;
+                    }
+                }
+
+                return validated;
+            }
+
+            function showResults() {
+                var input_list = document.getElementsByName('inputBox');
+                var results_area = document.getElementById('results');
+                if (validateFields() == true) {
+
+                    var xmlhttp = new XMLHttpRequest();
+
+                    xmlhttp.onreadystatechange = function ()
+                    {
+                        if (xmlhttp.readyState === 4 && this.status === 200) {
+                            //results_area.style = resultsStyle;
+                            results_area.innerHTML = xmlhttp.responseText;
+                        }
+                    }
+
+                    //var age = document.getElementById("age").value.toString().trim();
+                    var searchString = "";
+                    var attribute = "";
+                    var value;
+                    for (var i = 0; i < input_list.length; i++) {
+                        attribute = input_list[i].getAttribute('id').toString();
+                        value = input_list[i].value.toString();
+                        searchString += attribute + '=' + value;
+
+                        if (i < input_list.length - 1) {
+                            searchString += "&";
+                        }
+                        //alert(input_list[i].value.toString().trim());
+                    }
+                    //alert(searchString);
+                    xmlhttp.open("GET", "artists.php?" + searchString, false);
+
+                    xmlhttp.send();
+                } else {
+                    if (document.getElementById("price").value < 0) {
+                        negativeResults();
+                    } else {
+                        resetResults();
+                    }
+                }
+
+
+
+                for (var i = 0; i < input_list.length; i++) {
+                    // either way should get you the value
+                    input_list[i].onkeyup = function () {
+                        showResults();
+                    };
+                }
+            }
+
+            function clearForm() {
+                var input_list = document.getElementsByName('inputBox');
+                for (var i = 0; i < input_list.length; i++) {
+                    input_list[i].value = "";
+                }
+                resetResults();
+            }
+
+            function negativeResults() {
+                resetResults();
+                var results_area = document.getElementById('results');
+                results_area.innerHTML = negativeResultsPlaceholderHTML;
+            }
+
+            function resetResults() {
+                var results_area = document.getElementById('results');
+                resultsPlaceholderStyle = "margin-top:285px;  margin-bottom:60px; text-align:center;";
+                //results_area.style = resultsPlaceholderStyle;
+                results_area.innerHTML = resultsPlaceholderHTML;
+            }
+
+            function startDictation() { //from Google API Example at
+
+                if (window.hasOwnProperty('webkitSpeechRecognition')) {
+
+                    var recognition = new webkitSpeechRecognition();
+
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+
+                    recognition.lang = "en-US";
+                    recognition.start();
+
+                    document.getElementById("micImg").src = "mic-animate.gif";
+
+                    recognition.onresult = function (e) {
+                        document.getElementById('artist').value
+                                = e.results[0][0].transcript;
+                        recognition.stop();
+                        document.getElementById('micImg').src = "mic.gif";
+                        showResults();
+                    };
+
+
+
+                    recognition.onerror = function (e) {
+                        recognition.stop();
+                        document.getElementById('micImg').src = "mic.gif";
+                    }
+                }
+
+            }
+        </script>
+    </head>
+    <body>
+        <div id='header1' class='header w3-light-grey' style='overflow-x:scroll; text-align:center;'>
+            <div style="vertical-align: text-bottom; margin-top: 30px;">
+                <h1 class='w3-light-grey shadowedtext' style='margin-left: 15px;'>Search<img style="vertical-align:text-bottom; margin-left:20px; margin-right:20px;" height="50" src="lastfm.png"/>Similar Artists</h1>
+            </div>
+            <form class='w3-light-grey' style='margin-bottom:15px;' name="searchForm">
+                <div style="text-align: center;">
+                    <table style="margin-left:auto; margin-right:auto;" width ="800">
+
+                        <tr>
+                            <td colspan="2"><h4 class='w3-light-grey shadowedtext' style='margin-left: 15px; margin-right:15px;'><input type="text" style="padding-left:10px; width: 500px;margin-left:20px;  border:0px; box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);" name="inputBox" id="artist" placeholder="Search artists or activate voice search" onkeydown="preventSubmission();"><img id="micImg" style="margin-left:5px" onclick="startDictation()" src="mic.gif" alt="mic.gif"/> </h4></td>
+                        </tr>
+                        <tr>
+                            <td><input class='w3-grey w3-button' style='margin-right:15px;' type="button" value="Clear Criteria" onclick="clearForm();"><input class='w3-dark-grey w3-button' style='margin-left:15px;' type="button" value="Search last.fm" onclick="showResults();"></td>
+                        </tr>
+
+                    </table>
+                </div>
+            </form>
+
+        </div>
+        <hr/>
+        <div class='results w3-red' id="results">
+
+            <img src='http://vectorlogofree.com/wp-content/uploads/2014/04/3906-last-fm-icon-vector-icon-vector-eps.png' height=225 alt="last.fm logo"></br>
+            <h3 class='w3-red shadowedtext' style='text-align:center'>Enter search criteria to begin...</h3>
+
+        </div>
+        <div class='footer w3-light-grey shadowedtext'>Created by Team 4 Technology Services</div>
+    </body>
+</html>
