@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <!--
     John Galletta
-    Abeer
-    Mona
-    Mario Saint-Fleur
     INFO600-001
     February 24, 2018
     Dr. Yuan An
